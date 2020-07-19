@@ -62,7 +62,6 @@ public class GridGenerator : MonoBehaviour
         {
             return;
         }
-        return;
         Gizmos.color = Color.red;
         for (int i = 0; i < _vertices.Length; i++)
         {
