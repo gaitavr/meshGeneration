@@ -327,8 +327,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8fe018cd43d48a3967e23d7564a416b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _xSize: 5
-  _ySize: 5
+  _xSize: 6
+  _ySize: 4
   _zSize: 5
 --- !u!4 &1326166547
 Transform:
