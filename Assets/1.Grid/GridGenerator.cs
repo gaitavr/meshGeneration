@@ -40,7 +40,8 @@ public class GridGenerator : MonoBehaviour
         _mesh.tangents = tangents;
 
         int[] triangles = new int[_xSize * _ySize * 6];
-        for (int ti = 0, vi = 0, y = 0; y < _ySize; y++, vi++)
+        int ti = 0, vi = 0;
+        for (int y = 0; y < _ySize; y++, vi++)
         {
             for (int x = 0; x < _xSize; x++, ti += 6, vi++)
             {
