@@ -9,6 +9,7 @@ public class ParallelepipedGenerator : MonoBehaviour
     private int _xSize, _ySize, _zSize;
 
     private Vector3[] _vertices;
+    private Vector3[] _normals;
     private Mesh _mesh;
 
     private void Start()
@@ -25,6 +26,9 @@ public class ParallelepipedGenerator : MonoBehaviour
         //Generate logic
         SetVertices();
         SetTriangles();
+        SetNormals();
+        
+        // _mesh.RecalculateNormals();
     }
 
     private void SetVertices()
@@ -35,7 +39,7 @@ public class ParallelepipedGenerator : MonoBehaviour
             (_ySize - 1) * (_zSize - 1);
         faceCount *= 2;
         _vertices = new Vector3[cornerCount + edgeCount + faceCount];
-
+        
         var v = 0;
         for (int y = 0; y <= _ySize; y++)
         {
@@ -86,15 +90,19 @@ public class ParallelepipedGenerator : MonoBehaviour
         // }
 
         _mesh.vertices = _vertices;
+        
     }
 
     private void SetTriangles()
     {
-        var cellCount = _xSize * _ySize + _ySize * _zSize + _zSize * _xSize;
+        var cellCount = _xSize * _ySize + _ySize * _zSize;
         cellCount *= 2;
         var triangles = new int[cellCount * 6];
+        var bottomTriangles = new int[_xSize * _zSize * 6];
+        var topTriangles = new int[_xSize * _zSize * 6];
+        
         var loop = (_xSize + _zSize) * 2;
-        int ti = 0, vi = 0;
+        int ti = 0, vi = 0, t_bottom = 0, t_top = 0;
         for (int y = 0; y < _ySize; y++, vi++)
         {
             for (int k = 0; k < loop - 1; k++, vi++)
@@ -106,27 +114,33 @@ public class ParallelepipedGenerator : MonoBehaviour
                 vi - loop + 1, vi + 1);
         }
 
-        ti = SetTop(triangles, ti, loop);
-        ti = SetBottom(triangles, ti, loop);
-        
-        _mesh.triangles = triangles;
+        SetTop(topTriangles, t_top, loop);
+        SetBottom(bottomTriangles, t_bottom, loop);
+
+        _mesh.subMeshCount = 3;
+        _mesh.SetTriangles(triangles, 0);
+        _mesh.SetTriangles(bottomTriangles, 1);
+        _mesh.SetTriangles(topTriangles, 2);
+        //_mesh.triangles = triangles;
     }
 
     private int SetTop(int[] triangles, int ti, int loop)
     {
-        //First row
-        var v = loop * _ySize;
-        for (int x = 0; x < _xSize - 1; x++, v++) 
-        {
-            ti = SetCell(triangles, ti, v, v + loop - 1, v + 1, v + loop);
-        }
-        ti = SetCell(triangles, ti, v, v + loop - 1,v + 1, v + 2);
-        
-        //Inner rows
+        var v_out_right = loop * _ySize;
         var v_out_left = loop * (_ySize + 1) - 1;
         var v_inner = v_out_left + 1;
-        var v_out_right = v + 2;
         
+        //First row
+        for (int x = 0; x < _xSize - 1; x++, v_out_right++) 
+        {
+            ti = SetCell(triangles, ti, v_out_right, v_out_right + loop - 1, 
+                v_out_right + 1, v_out_right + loop);
+        }
+        ti = SetCell(triangles, ti, v_out_right, v_out_right + loop - 1,
+            v_out_right + 1, v_out_right + 2);
+        
+        //Inner rows
+        v_out_right += 2;
         for (int z = 1; z < _zSize - 1; z++, v_out_left--, v_inner++, v_out_right++)
         {
             ti = SetCell(triangles, ti, v_out_left, v_out_left - 1,
@@ -141,45 +155,48 @@ public class ParallelepipedGenerator : MonoBehaviour
         }
         
         //Last row
-        ti = SetCell(triangles, ti, v_out_left, v_out_left - 1, 
-            v_inner, v_out_left - 2);
+        v_out_left--;
+        v_out_right++;
+        ti = SetCell(triangles, ti, v_out_left + 1, v_out_left, 
+            v_inner, v_out_left - 1);
     
-        for (int x = 1; x < _xSize - 1; x++)
+        for (int x = 1; x < _xSize - 1; x++, v_out_left--, v_inner++)
         {
-            v_out_left--;
-            v_inner++;
-            ti = SetCell(triangles, ti, v_inner - 1, v_out_left - 1, 
-                v_inner, v_out_left - 2);
+            ti = SetCell(triangles, ti, v_inner, v_out_left - 1, 
+                v_inner + 1, v_out_left - 2);
         }
         
-        ti = SetCell(triangles, ti, v_inner, v_out_right + 2, 
-            v_out_right, v_out_right + 1);
+        ti = SetCell(triangles, ti, v_inner, v_out_right + 1, 
+            v_out_right - 1, v_out_right);
         
         return ti;
     }
 
     private int SetBottom(int[] triangles, int ti, int loop)
     {
-        //First row
-        var v = 2;
-        var v_inner = _vertices.Length - (_zSize - 1) * (_xSize - 1);
+        var v_out_right = 0;
+        var v_out_left = loop - 1;
+        var innerStart = _vertices.Length - (_zSize - 1) * (_xSize - 1);
+        var v_inner = innerStart;
         
-        ti = SetCell(triangles, ti, loop - 1, 0, 
-            v_inner, 1);
+        //First row
+        ti = SetCell(triangles, ti, v_out_left, v_out_right, 
+            v_inner, v_out_right + 1);
+        v_out_right++;
 
-        for (int x = 1; x < _xSize - 1; x++, v++, v_inner++) 
+        for (int x = 1; x < _xSize - 1; x++, v_out_right++, v_inner++) 
         {
-            ti = SetCell(triangles, ti, v_inner, v - 1, 
-                v_inner + 1, v);
+            ti = SetCell(triangles, ti, v_inner, v_out_right, 
+                v_inner + 1, v_out_right + 1);
         }
         
-        ti = SetCell(triangles, ti, v_inner, v - 1,v + 1, v);
+        ti = SetCell(triangles, ti, v_inner, v_out_right,
+            v_out_right + 2, v_out_right + 1);
 
         //Inner rows
-        var v_out_left = loop - 1;
-        v_inner = _vertices.Length - (_zSize - 1) * (_xSize - 1);
-        var v_out_right = _xSize + 1;
-        
+        v_inner = innerStart;
+        v_out_right += 2;
+
         for (int z = 1; z < _zSize - 1; z++, v_out_left--, v_inner++, v_out_right++)
         {
             ti = SetCell(triangles, ti, v_out_left - 1, v_out_left,
@@ -199,12 +216,10 @@ public class ParallelepipedGenerator : MonoBehaviour
         ti = SetCell(triangles, ti, v_out_left, v_out_left + 1, 
             v_out_left - 1, v_inner);
     
-        for (int x = 1; x < _xSize - 1; x++)
+        for (int x = 1; x < _xSize - 1; x++, v_out_left--, v_inner++)
         {
-            v_out_left--;
-            v_inner++;
-            ti = SetCell(triangles, ti, v_out_left, v_inner - 1, 
-                v_out_left - 1, v_inner);
+            ti = SetCell(triangles, ti, v_out_left - 1, v_inner, 
+                v_out_left - 2, v_inner + 1);
         }
         
         ti = SetCell(triangles, ti, v_out_right + 1, v_inner, 
@@ -220,5 +235,16 @@ public class ParallelepipedGenerator : MonoBehaviour
         triangles[ti + 2] = triangles[ti + 3] = v10;
         triangles[ti + 5] = v11;
         return ti + 6;
+    }
+
+    private void SetNormals()
+    {
+        _normals = new Vector3[_vertices.Length];
+        var centerPoint = new Vector3(_xSize/2f, _ySize/2f, _zSize/2f);
+        for (int i = 0; i < _vertices.Length; i++)
+        {
+            _normals[i] = (_vertices[i] - centerPoint).normalized;
+        }
+        _mesh.normals = _normals;
     }
 }
