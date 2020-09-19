@@ -27,8 +27,6 @@ public class ParallelepipedGenerator : MonoBehaviour
         SetVertices();
         SetTriangles();
         SetNormals();
-        
-        // _mesh.RecalculateNormals();
     }
 
     private void SetVertices()
@@ -90,37 +88,61 @@ public class ParallelepipedGenerator : MonoBehaviour
         // }
 
         _mesh.vertices = _vertices;
-        
+        //_mesh.uv = _uvs;
     }
 
     private void SetTriangles()
     {
         var cellCount = _xSize * _ySize + _ySize * _zSize;
         cellCount *= 2;
-        var triangles = new int[cellCount * 6];
-        var bottomTriangles = new int[_xSize * _zSize * 6];
-        var topTriangles = new int[_xSize * _zSize * 6];
+        var trianglesFront = new int[_xSize * _ySize * 6];
+        var trianglesBack = new int[_xSize * _ySize * 6];
+        var trianglesLeft = new int[_zSize * _ySize * 6];
+        var trianglesRight = new int[_zSize * _ySize * 6];
+        var trianglesBottom = new int[_xSize * _zSize * 6];
+        var trianglesTop = new int[_xSize * _zSize * 6];
         
         var loop = (_xSize + _zSize) * 2;
-        int ti = 0, vi = 0, t_bottom = 0, t_top = 0;
+        int vi = 0, tFront = 0, tBack = 0, tLeft = 0, tRight = 0, tBottom = 0, tTop = 0;
         for (int y = 0; y < _ySize; y++, vi++)
         {
-            for (int k = 0; k < loop - 1; k++, vi++)
+            for (int x = 0; x < _xSize; x++, vi++)
             {
-                ti = SetCell(triangles, ti, vi, vi + loop,
+                tFront = SetCell(trianglesFront, tFront, vi, vi + loop,
                     vi + 1, vi + loop + 1);
             }
-            ti = SetCell(triangles, ti, vi, vi + loop, 
+
+            for (int z = 0; z < _zSize; z++, vi++)
+            {
+                tRight = SetCell(trianglesRight, tRight, vi, vi + loop,
+                    vi + 1, vi + loop + 1);
+            }
+            
+            for (int x = _xSize; x > 0; x--, vi++)
+            {
+                tBack = SetCell(trianglesBack, tBack, vi, vi + loop,
+                    vi + 1, vi + loop + 1);
+            }
+            
+            for (int z = _zSize; z > 1; z--, vi++)
+            {
+                tLeft = SetCell(trianglesLeft, tLeft, vi, vi + loop,
+                    vi + 1, vi + loop + 1);
+            }
+            tLeft = SetCell(trianglesLeft, tLeft, vi, vi + loop, 
                 vi - loop + 1, vi + 1);
         }
 
-        SetTop(topTriangles, t_top, loop);
-        SetBottom(bottomTriangles, t_bottom, loop);
+        SetTop(trianglesTop, tTop, loop);
+        SetBottom(trianglesBottom, tBottom, loop);
 
-        _mesh.subMeshCount = 3;
-        _mesh.SetTriangles(triangles, 0);
-        _mesh.SetTriangles(bottomTriangles, 1);
-        _mesh.SetTriangles(topTriangles, 2);
+        _mesh.subMeshCount = 6;
+        _mesh.SetTriangles(trianglesFront, 0);
+        _mesh.SetTriangles(trianglesBack, 1);
+        _mesh.SetTriangles(trianglesLeft, 2);
+        _mesh.SetTriangles(trianglesRight, 3);
+        _mesh.SetTriangles(trianglesBottom, 4);
+        _mesh.SetTriangles(trianglesTop, 5);
         //_mesh.triangles = triangles;
     }
 
