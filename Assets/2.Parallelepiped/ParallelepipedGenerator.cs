@@ -88,13 +88,10 @@ public class ParallelepipedGenerator : MonoBehaviour
         // }
 
         _mesh.vertices = _vertices;
-        //_mesh.uv = _uvs;
     }
 
     private void SetTriangles()
     {
-        var cellCount = _xSize * _ySize + _ySize * _zSize;
-        cellCount *= 2;
         var trianglesFront = new int[_xSize * _ySize * 6];
         var trianglesBack = new int[_xSize * _ySize * 6];
         var trianglesLeft = new int[_zSize * _ySize * 6];
@@ -268,5 +265,16 @@ public class ParallelepipedGenerator : MonoBehaviour
             _normals[i] = (_vertices[i] - centerPoint).normalized;
         }
         _mesh.normals = _normals;
+    }
+
+    private void OnDrawGizmos()
+    {
+        if(_vertices == null)
+            return;
+        Gizmos.color = Color.cyan;
+        foreach (var v in _vertices)
+        {
+            Gizmos.DrawCube(v, Vector3.one * 0.15f);
+        }
     }
 }

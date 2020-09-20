@@ -59,6 +59,7 @@ public class GridGenerator : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        return;
         if (_vertices == null)
         {
             return;

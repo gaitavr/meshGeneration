@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Red
   m_Shader: {fileID: 4800000, guid: d20680d58654fb04ab6af1ece6b731f1, type: 3}
-  m_ShaderKeywords: _DIR_X _FACES_LEFT _FACES_Z _PARTS_PERIMETER _PARTS_SIDE _PARTS_SIDE_X
+  m_ShaderKeywords: _DIR_X _FACES_FRONT _FACES_Z _PARTS_PERIMETER _PARTS_SIDE _PARTS_SIDE_X
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0

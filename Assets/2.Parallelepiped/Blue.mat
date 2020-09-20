@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Blue
   m_Shader: {fileID: 4800000, guid: d20680d58654fb04ab6af1ece6b731f1, type: 3}
-  m_ShaderKeywords: _FACES_Y _PARTS_TOP
+  m_ShaderKeywords: _FACES_LEFT _FACES_Y _PARTS_TOP
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -61,7 +61,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _Dir: 0
     - _DstBlend: 0
-    - _FACES: 1
+    - _FACES: 3
     - _Faces: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
